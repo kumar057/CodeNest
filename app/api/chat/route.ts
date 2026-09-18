@@ -13,37 +13,68 @@ export async function POST(request: Request) {
   try {
     const { messages } = await request.json();
     const apiKey = process.env.AI_API_KEY;
-    const model = process.env.AI_MODEL || "gpt-4o-mini";
-    const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
+    const model = process.env.AI_MODEL || "gemini-2.5-flash";
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "AI is not configured yet. Add AI_API_KEY in your environment variables." },
+        { error: "AI is not configured yet. Add AI_API_KEY in your Vercel environment variables." },
         { status: 503 }
       );
     }
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "system", content: systemPrompt }, ...(messages || [])],
-        temperature: 0.4,
-      }),
-    });
+    const contents = (Array.isArray(messages) ? messages : [])
+      .filter((message) => message?.role === "user" || message?.role === "assistant")
+      .map((message) => ({
+        role: message.role === "assistant" ? "model" : "user",
+        parts: [{ text: String(message.content ?? "") }],
+      }))
+      .filter((message) => message.parts[0].text.trim());
+
+    if (contents.length === 0) {
+      return NextResponse.json({ error: "Please enter a message." }, { status: 400 });
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents,
+          generationConfig: {
+            temperature: 0.4,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const detail = await response.text();
-      return NextResponse.json({ error: `AI provider error: ${detail.slice(0, 300)}` }, { status: response.status });
+      return NextResponse.json(
+        { error: `Gemini API error: ${detail.slice(0, 300)}` },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
-    return NextResponse.json({ message: data.choices?.[0]?.message?.content || "I couldn't generate a response." });
+    const message = data.candidates?.[0]?.content?.parts
+      ?.map((part: { text?: string }) => part.text || "")
+      .join("")
+      .trim();
+
+    return NextResponse.json({
+      message: message || "I couldn't generate a response. Please try again.",
+    });
   } catch {
-    return NextResponse.json({ error: "Unable to process the chat request." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Unable to process the chat request." },
+      { status: 500 }
+    );
   }
 }
