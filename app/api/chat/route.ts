@@ -13,7 +13,8 @@ export async function POST(request: Request) {
   try {
     const { messages } = await request.json();
     const apiKey = process.env.AI_API_KEY;
-    const model = process.env.AI_MODEL || "gemini-2.5-flash";
+    const configuredModel = process.env.AI_MODEL || "gemini-3.6-flash";
+    const model = configuredModel === "gemini-2.5-flash" ? "gemini-3.6-flash" : configuredModel;
 
     if (!apiKey) {
       return NextResponse.json(
@@ -48,8 +49,7 @@ export async function POST(request: Request) {
           },
           contents,
           generationConfig: {
-            temperature: 0.4,
-          },
+            },
         }),
       }
     );
