@@ -6,7 +6,7 @@ const topics = [[
   "🐍","Python","Teach me Python from beginner level"],["🗄️","SQL","Teach me SQL with simple examples"],
   ["☕","Java","Start Java for a beginner"],["🌐","JavaScript","Teach me JavaScript step by step"],
   ["🎨","HTML & CSS","Teach me HTML and CSS"],["🤖","AI / ML","Explain AI and machine learning simply"]
-]];
+];
 const welcome: Message = { role: "assistant", text: "Hi! I’m CodeNest. 👋\n\nI’m your coding tutor. Ask me anything, or choose a topic below. I’ll explain it simply, give examples, and help you practice one question at a time." };
 
 export default function Home() {
