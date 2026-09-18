@@ -12,6 +12,24 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
+  async function signInWithGoogle() {
+    setMessage("");
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/`,
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Google sign-in is not configured yet.");
+      setBusy(false);
+    }
+  }
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     setMessage("");
@@ -26,7 +44,7 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } },
+          options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/` },
         });
         if (error) throw error;
         setMessage("Account created. Check your email if confirmation is enabled, then sign in.");
@@ -114,6 +132,29 @@ export default function LoginPage() {
         {message && <div className={message.toLowerCase().includes("created") ? "auth-message success" : "auth-message"}>{message}</div>}
 
         <div className="auth-or"><span>or</span></div>
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          disabled={busy}
+          style={{
+            width: "100%",
+            border: "1px solid rgba(255,255,255,.14)",
+            borderRadius: 11,
+            padding: "13px 14px",
+            background: "rgba(255,255,255,.06)",
+            color: "#fff",
+            fontWeight: 750,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            cursor: busy ? "not-allowed" : "pointer",
+            opacity: busy ? 0.65 : 1,
+          }}
+        >
+          <span style={{ width: 20, height: 20, borderRadius: 5, background: "#fff", color: "#111", display: "grid", placeItems: "center", fontWeight: 900 }}>G</span>
+          Continue with Google
+        </button>
         <Link href="/" className="auth-guest">Continue without an account</Link>
         <p className="auth-foot">By continuing, you agree to use CodeNest responsibly while learning.</p>
       </section>
