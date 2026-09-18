@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 type Message = { role: "user" | "assistant"; text: string };
@@ -21,7 +22,7 @@ export default function Home() {
    <div className="side-label">Chats</div><button className="chat-item active">◌ New learning chat</button>
    <div className="side-label">Learn</div>{topics.map(([icon,name,prompt])=><button className="side-course" key={name} onClick={()=>{setCourse(name);void send(prompt)}}><span>{icon}</span><span>{name}</span></button>)}
    <div className="sidebar-footer">AI coding tutor<br/>Learn by conversation</div></aside>
-  <main className="chat-shell"><header className="chat-header"><div className="mobile-brand"><span className="brand-mark">⌘</span>CodeNest</div><div className="model-picker"><span className="status-dot"/>CodeNest Tutor⌄</div><button className="header-action" onClick={reset}>＋ New chat</button></header>
+  <main className="chat-shell"><header className="chat-header"><div className="mobile-brand"><span className="brand-mark">⌘</span>CodeNest</div><div className="model-picker"><span className="status-dot"/>CodeNest Tutor⌄</div><div className="header-actions"><button className="header-action" onClick={reset}>＋ New chat</button><Link className="login-link" href="/login">Log in</Link></div></header>
    <section className="conversation"><div className="conversation-inner">
     {messages.map((m,i)=><div className={m.role==="assistant"?"row assistant-row":"row user-row"} key={i}><div className={m.role==="assistant"?"avatar assistant-avatar":"avatar user-avatar"}>{m.role==="assistant"?"⌘":"You"}</div><div className="message-wrap"><div className="message-name">{m.role==="assistant"?"CodeNest":"You"}</div><div className={m.role==="assistant"?"bubble assistant-bubble":"bubble user-bubble"}>{m.text.split("\n").map((line,j)=><span key={j}>{line}{j<m.text.split("\n").length-1&&<br/>}</span>)}</div>{m.role==="assistant"&&i>0&&<div className="message-tools"><button onClick={()=>navigator.clipboard?.writeText(m.text)}>Copy</button><button onClick={()=>void send("Explain your previous answer in simpler words")}>Explain simpler</button><button onClick={()=>void send("Give me one practice question based on this")}>Practice</button></div>}</div></div>)}
     {loading&&<div className="row assistant-row"><div className="avatar assistant-avatar">⌘</div><div className="message-wrap"><div className="message-name">CodeNest</div><div className="bubble assistant-bubble typing"><i/><i/><i/></div></div></div>}
