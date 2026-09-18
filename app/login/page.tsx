@@ -50,20 +50,30 @@ export default function LoginPage() {
       <div className="auth-glow auth-glow-b" />
 
       <div className="auth-stage" aria-hidden="true">
-        <div className="auth-orbit auth-orbit-1" />
-        <div className="auth-orbit auth-orbit-2" />
-        <div className="auth-orbit auth-orbit-3" />
-        <div className="auth-core">
-          <div className="core-face core-front">⌘</div>
-          <div className="core-face core-back">&lt;/&gt;</div>
-          <div className="core-face core-right">PY</div>
-          <div className="core-face core-left">SQL</div>
-          <div className="core-face core-top">AI</div>
-          <div className="core-face core-bottom">JS</div>
+        <div className="scene-stars"><i/><i/><i/><i/><i/><i/><i/><i/></div>
+        <div className="scene-ring ring-a" />
+        <div className="scene-ring ring-b" />
+        <div className="scene-ring ring-c" />
+        <div className="scene-core">
+          <div className="core-shadow" />
+          <div className="holo-cube">
+            <span className="cube-face f-front">⌘</span>
+            <span className="cube-face f-back">&lt;/&gt;</span>
+            <span className="cube-face f-right">PY</span>
+            <span className="cube-face f-left">SQL</span>
+            <span className="cube-face f-top">AI</span>
+            <span className="cube-face f-bottom">JS</span>
+          </div>
+          <div className="energy-orbit orbit-x"><b>AI</b></div>
+          <div className="energy-orbit orbit-y"><b>PY</b></div>
         </div>
-        <span className="code-particle p1">const learn = true;</span>
-        <span className="code-particle p2">SELECT * FROM skills;</span>
-        <span className="code-particle p3">print("hello")</span>
+        <div className="floating-panel panel-a"><small>LEARN</small><strong>Python</strong><em>01</em></div>
+        <div className="floating-panel panel-b"><small>QUERY</small><strong>SELECT *</strong><em>SQL</em></div>
+        <div className="floating-panel panel-c"><small>BUILD</small><strong>AI / ML</strong><em>06</em></div>
+        <div className="code-stream stream-a">const learn = true;</div>
+        <div className="code-stream stream-b">model.fit(data)</div>
+        <div className="code-stream stream-c">print("hello")</div>
+        <div className="scene-label"><span className="live-dot"/>AI CODING CORE</div>
       </div>
 
       <section className="auth-card">
