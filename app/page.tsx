@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+type Message = { role: "user" | "ai"; text: string };
+
 const courses = [
   { icon: "🐍", name: "Python", text: "Programming fundamentals, functions, loops and problem solving." },
   { icon: "🗄️", name: "SQL / MySQL", text: "Queries, filtering, joins, grouping and database design." },
@@ -13,15 +15,31 @@ const courses = [
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
     { role: "ai", text: "Hi! I'm CodeNest AI. Choose a course or ask me anything about programming." },
   ]);
 
-  function send() {
+  async function send() {
     const value = message.trim();
-    if (!value) return;
-    setMessages((m) => [...m, { role: "user", text: value }, { role: "ai", text: "Great question! AI tutor integration is ready for the next step. Soon I’ll explain concepts, give hints, and check your practice answers." }]);
+    if (!value || loading) return;
+    const next = [...messages, { role: "user" as const, text: value }];
+    setMessages(next);
     setMessage("");
+    setLoading(true);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next }),
+      });
+      const data = await response.json();
+      setMessages((current) => [...current, { role: "ai", text: data.message || data.error || "Something went wrong." }]);
+    } catch {
+      setMessages((current) => [...current, { role: "ai", text: "I couldn't reach the AI service. Please check the server configuration." }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -37,33 +55,29 @@ export default function Home() {
         <button className="nav">🗂️ My Chats</button>
         <button className="nav">⚙️ Settings</button>
       </aside>
-
       <main className="main">
-        <header className="topbar"><strong>AI Coding Tutor</strong><span className="badge">Learning mode</span></header>
+        <header className="topbar"><strong>AI Coding Tutor</strong><span className="badge">{loading ? "Thinking..." : "Online"}</span></header>
         <section className="content">
           <div className="hero">
             <h1>Learn to code with <span className="accent">CodeNest AI.</span></h1>
-            <p>A small, focused learning platform where you can learn programming through conversation, practice problems, hints, and simple explanations.</p>
+            <p>A focused learning platform where you learn programming through conversation, practice problems, hints, and simple explanations.</p>
           </div>
-
           <div className="courses">
             {courses.map((course) => (
               <button className="course" key={course.name} onClick={() => setMessage(`Teach me ${course.name} from beginner level`)}>
-                <div className="icon">{course.icon}</div>
-                <h3>{course.name}</h3>
-                <p>{course.text}</p>
+                <div className="icon">{course.icon}</div><h3>{course.name}</h3><p>{course.text}</p>
               </button>
             ))}
           </div>
-
           <section className="chat">
-            <div className="chat-head"><strong>CodeNest AI Tutor</strong><span className="badge">Online</span></div>
+            <div className="chat-head"><strong>CodeNest AI Tutor</strong><span className="badge">Tutor</span></div>
             <div className="messages">
               {messages.map((item, i) => <div key={i} className={`message ${item.role}`}>{item.text}</div>)}
+              {loading && <div className="message ai">Thinking...</div>}
             </div>
             <div className="input-row">
-              <input value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Ask: Explain Python loops simply..." />
-              <button className="send" onClick={send}>Send</button>
+              <input value={message} disabled={loading} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Ask: Explain Python loops simply..." />
+              <button className="send" disabled={loading} onClick={send}>{loading ? "..." : "Send"}</button>
             </div>
           </section>
         </section>
